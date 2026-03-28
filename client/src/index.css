@@ -51,6 +51,15 @@ h1, h2, h3, h4 {
   justify-content: space-between;
   padding: 0 20px;
   height: 70px;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .app-header {
+    height: auto;
+    min-height: 60px;
+    padding: 0 10px;
+  }
 }
 
 .brand {
@@ -59,6 +68,20 @@ h1, h2, h3, h4 {
   gap: 12px;
   font-family: var(--font-display);
   font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .brand {
+    font-size: 1.2rem;
+    gap: 8px;
+  }
+  .brand span {
+    display: none; /* Nasconde "Deleghe" se proprio non c'è spazio, ma di solito ci entra. Lasciamolo custom! */
+  }
+  .brand span.always-show {
+    display: inline;
+  }
 }
 
 .brand-icon {
@@ -74,8 +97,15 @@ h1, h2, h3, h4 {
 
 .tabs {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   height: 100%;
+}
+
+@media (max-width: 640px) {
+  .tabs {
+    flex: 1;
+    justify-content: flex-end;
+  }
 }
 
 .tab {
@@ -87,9 +117,17 @@ h1, h2, h3, h4 {
   font-size: 1rem;
   padding: 0 16px;
   cursor: pointer;
-  height: 100%;
+  height: 70px;
   transition: all 0.2s ease-in-out;
   border-bottom: 3px solid transparent;
+}
+
+@media (max-width: 640px) {
+  .tab {
+    padding: 0 8px;
+    font-size: 0.9rem;
+    height: 60px;
+  }
 }
 
 .tab:hover {
