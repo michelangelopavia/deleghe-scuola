@@ -303,13 +303,13 @@ app.post('/api/genera-pdf', async (req, res) => {
 
   // ── BOX DELEGATI ──────────────────────────────────────────
   for (const delegato of delegati) {
-    const boxH = 75;
-    if (doc.y + boxH > 750) doc.addPage();
+    const boxH = 65; // Ridotta da 75 a 65
+    if (doc.y + boxH > 770) doc.addPage();
     
     const boxTop = doc.y;
     doc.rect(L, boxTop, W, boxH).stroke();
     const bL = L + 10;
-    doc.y = boxTop + 10;
+    doc.y = boxTop + 8;
 
     doc.x = bL;
     doc.fontSize(9).font('Helvetica')
@@ -320,7 +320,7 @@ app.post('/api/genera-pdf', async (req, res) => {
        .font('Helvetica').text(`   il: `, { continued: true })
        .font('Helvetica-Bold').text(`${fmtDate(delegato.data_nascita)}`);
 
-    doc.moveDown(0.4);
+    doc.moveDown(0.2); // Ridotto
     doc.x = bL;
     doc.fontSize(9).font('Helvetica')
        .text(`residente a: `, { continued: true })
@@ -330,7 +330,7 @@ app.post('/api/genera-pdf', async (req, res) => {
        .font('Helvetica').text(`  n: `, { continued: true })
        .font('Helvetica-Bold').text(`${delegato.numero_civico}`);
 
-    doc.moveDown(0.4);
+    doc.moveDown(0.2); // Ridotto
     doc.x = bL;
     doc.fontSize(9).font('Helvetica')
        .text(`documento di identità n: `, { continued: true })
@@ -340,43 +340,43 @@ app.post('/api/genera-pdf', async (req, res) => {
        .font('Helvetica').text(`  in data: `, { continued: true })
        .font('Helvetica-Bold').text(`${fmtDate(delegato.doc_data)}`);
 
-    doc.y = boxTop + boxH + 8;
+    doc.y = boxTop + boxH + 5; // Ridotto margine tra box
   }
 
-  doc.moveDown(0.5);
+  doc.moveDown(0.3);
   doc.fontSize(8).font('Helvetica-Oblique')
      .text('(allegare fotostatica documento di identità fronte e retro, non occorre se già in possesso dell\'Istituto).', { align: 'center' });
 
-  doc.moveDown(1.5);
+  doc.moveDown(0.8);
 
   // ── SEZIONE RECAPITI ──────────────────────────────────────
-  doc.fontSize(10).font('Helvetica').text('I sottoscritti, inoltre,');
-  doc.moveDown(0.5);
+  doc.fontSize(9).font('Helvetica').text('I sottoscritti, inoltre,');
+  doc.moveDown(0.3);
 
   const checkSi = autorizza_recapiti ? '[X]' : '[ ]';
   const checkNo = autorizza_recapiti ? '[ ]' : '[X]';
 
-  doc.fontSize(10).font('Helvetica')
+  doc.fontSize(9).font('Helvetica')
      .text(`  •  ${checkSi} autorizzano  ${checkNo} non autorizzano, l'Istituto Valdese, a fornire i recapiti telefonici mobili ai genitori dei compagni di classe del proprio figlio.`, {
        indent: 20,
        width: W - 20
      });
 
-  doc.moveDown(2.5);
+  doc.moveDown(1.5);
 
-  // ── FIRMA ──────────────────────────────────────────────────
-  const firmaY = doc.y;
+  // ── FIRMA E DATA (SULLA STESSA RIGA) ──────────────────────
+  const rowY = doc.y;
 
   doc.fontSize(10).font('Helvetica-Bold')
-     .text(`Palermo, lì  ${dataOggi}`, L, firmaY);
+     .text(`Palermo, lì  ${dataOggi}`, L, rowY);
 
-  // Linea firma
-  const firmaX = L + W - 200;
-  doc.moveTo(firmaX, firmaY + 30).lineTo(firmaX + 190, firmaY + 30).stroke();
-  doc.fontSize(9).font('Helvetica')
-     .text('(Firma)', firmaX, firmaY + 33, { width: 190, align: 'center' });
+  // Linea firma spruzzata a destra sulla stessa riga
+  const firmaX = L + W - 180;
+  doc.moveTo(firmaX, rowY + 15).lineTo(firmaX + 170, rowY + 15).stroke();
+  doc.fontSize(8).font('Helvetica')
+     .text('(Firma)', firmaX, rowY + 18, { width: 170, align: 'center' });
 
-  doc.moveDown(4);
+  doc.moveDown(2);
 
   // ── FOOTER ──────────────────────────────────────────────────
   // Posiziona il footer a fondo pagina
