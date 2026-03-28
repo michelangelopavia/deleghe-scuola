@@ -7,21 +7,19 @@ function App() {
   const [activeTab, setActiveTab] = useState('genera');
   const [adminPassword] = useState('MichelangeloPavia15');
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [showPublicRegistration, setShowPublicRegistration] = useState(false);
+  
+  // Utilizziamo un routing basilare nativo sulla barra degli indirizzi
+  const pathname = window.location.pathname;
+  const isPublicRoute = pathname === '/genitore-delegato';
 
-  const params = new URLSearchParams(window.location.search);
-  const isAdminMode = params.get('admin') === '1';
-  const isPublicMode = params.get('public') === '1';
-
-  const handleAdminLogin = () => {
-    const password = prompt('Inserisci password amministratore:');
+  const handleAdminAuth = (e) => {
+    e.preventDefault();
+    const password = e.target.password.value;
     if (password === adminPassword) {
       setAdminAuthenticated(true);
-      setShowAdminLogin(false);
-      setActiveTab('gestisci');
-    } else if (password !== null) {
-      alert('Password non corretta');
+    } else {
+      alert('Password non corretta!');
+      e.target.password.value = '';
     }
   };
 
@@ -30,40 +28,33 @@ function App() {
     setActiveTab('genera');
   };
 
-  if (isPublicMode && !showPublicRegistration) {
+  // VISTA PUBBLICA PER I GENITORI
+  if (isPublicRoute) {
     return (
-      <div className="app-container">
-        <h1>Registrazione Delegati</h1>
-        <RegistraDelegato isPublic={true} />
-      </div>
+      <>
+        <header className="app-header" style={{ justifyContent: 'center' }}>
+          <div className="brand">
+            <div className="brand-icon">📋</div>
+            <span>Istituto Valdese La Noce - Portale Genitori</span>
+          </div>
+        </header>
+
+        <main className="app-container">
+          <div className="card">
+            <h1 className="card-title">Registrazione Delegato al Prelievo</h1>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+              Gentile Genitore, compili il seguente modulo per registrare una persona autorizzata 
+              al prelievo di suo figlio/a. I dati saranno poi disponibili per la scuola.
+            </p>
+            <hr className="card-divider" />
+            <RegistraDelegato isPublic={true} />
+          </div>
+        </main>
+      </>
     );
   }
 
-  if (isAdminMode && !adminAuthenticated) {
-    return (
-      <div className="app-container">
-        <h1>Amministrazione - Accesso Riservato</h1>
-        {!showAdminLogin ? (
-          <button onClick={handleAdminLogin}>Accedi come Amministratore</button>
-        ) : null}
-      </div>
-    );
-  }
-
-  if (isAdminMode && adminAuthenticated) {
-    return (
-      <div className="app-container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h1>Amministrazione</h1>
-          <button onClick={handleLogout} style={{ backgroundColor: '#d32f2f' }}>
-            Esci
-          </button>
-        </div>
-        <GestisciDelegati />
-      </div>
-    );
-  }
-
+  // VISTA SEGRETERIA / SCUOLA (Generatore e Gestione Delegati)
   return (
     <>
       <header className="app-header">
@@ -84,22 +75,61 @@ function App() {
           >
             Soggetti Delegati
           </button>
+          
+          {adminAuthenticated && (
+            <button className="tab" onClick={handleLogout} style={{color: '#ffcdd2', borderBottom: 'none'}}>
+              Log out (Esci)
+            </button>
+          )}
         </div>
       </header>
 
       <main className="app-container">
         <div className="card">
-          <h1 className="card-title">Generatore Autorizzazioni</h1>
+          <h1 className="card-title">
+            {activeTab === 'genera' ? 'Generatore Autorizzazioni' : 'Gestione Soggetti Delegati'}
+          </h1>
           <hr className="card-divider" />
           
           {activeTab === 'genera' && <GeneraPDF />}
+          
           {activeTab === 'registrati' && (
             <div>
-              <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
-                Gestione dell'elenco dei delegati registrati nel sistema.
-              </p>
-              {/* Qui dovrebbe esserci un componente lista, ma per ora lo lasciamo come da originale o usiamo GestisciDelegati se appropriato */}
-              <GestisciDelegati />
+              {!adminAuthenticated ? (
+                <div style={{
+                  backgroundColor: '#faf8f5', 
+                  border: '1px solid var(--border-light)',
+                  padding: '32px', 
+                  borderRadius: '16px',
+                  maxWidth: '400px',
+                  margin: '40px auto',
+                  textAlign: 'center'
+                }}>
+                  <h3 style={{fontFamily: 'var(--font-display)', color: 'var(--accent-dark)', marginTop: 0}}>Accesso Riservato</h3>
+                  <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+                    Inserisci la password amministrativa per visualizzare, registrare o eliminare i delegati.
+                  </p>
+                  <form onSubmit={handleAdminAuth}>
+                    <div className="form-group" style={{ textAlign: 'left' }}>
+                      <input 
+                        type="password" 
+                        name="password" 
+                        placeholder="Password" 
+                        required 
+                        style={{ textAlign: 'center' }}
+                      />
+                    </div>
+                    <button type="submit" className="btn-primary btn-lg">Accedi</button>
+                  </form>
+                </div>
+              ) : (
+                <>
+                  <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+                    Benvenuto! Qui puoi gestire l'elenco dei delegati registrati nel sistema.
+                  </p>
+                  <GestisciDelegati />
+                </>
+              )}
             </div>
           )}
         </div>
