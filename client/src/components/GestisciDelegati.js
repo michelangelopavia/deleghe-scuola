@@ -56,66 +56,66 @@ function GestisciDelegati() {
     <div>
       {message && (
         <div className={`alert ${messageType}`}>
-          {message}
+          {messageType === 'success' ? '✅ ' : '❌ '}{message}
         </div>
       )}
 
-      <div style={{ marginBottom: '20px' }}>
-        <button onClick={() => setShowAddForm(!showAddForm)}>
-          {showAddForm ? 'Nascondi Modulo' : 'Aggiungi Delegato'}
+      <div style={{ marginBottom: '24px' }}>
+        <button className="btn-primary" onClick={() => setShowAddForm(!showAddForm)}>
+          {showAddForm ? 'Nascondi Modulo' : '+ Aggiungi Delegato'}
         </button>
       </div>
 
       {showAddForm && (
         <div style={{ 
-          backgroundColor: '#f5f5f5', 
-          padding: '20px', 
-          borderRadius: '8px',
-          marginBottom: '20px'
+          backgroundColor: '#faf8f5', 
+          border: '1px solid var(--border-light)',
+          padding: '24px', 
+          borderRadius: '16px',
+          marginBottom: '32px'
         }}>
-          <h3>Registra Nuovo Delegato</h3>
+          <h2 style={{fontFamily: 'var(--font-display)', color: 'var(--accent-dark)', marginTop: 0}}>Registra Nuovo Delegato</h2>
+          <hr className="card-divider" />
           <RegistraDelegato onSuccess={handleDelegatoAggiunto} />
         </div>
       )}
 
-      <h2>Delegati Registrati</h2>
-      
       {loading ? (
-        <p>Caricamento...</p>
+        <p>Caricamento in corso...</p>
       ) : delegati.length === 0 ? (
-        <p style={{ color: '#666' }}>Non ci sono delegati registrati.</p>
+        <p style={{ color: 'var(--text-muted)' }}>Non ci sono delegati registrati. Usa il pulsante "Aggiungi" per inserirne uno.</p>
       ) : (
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Cognome</th>
-              <th>Email</th>
-              <th>Telefono</th>
-              <th>Data Registrazione</th>
-              <th>Azioni</th>
-            </tr>
-          </thead>
-          <tbody>
-            {delegati.map(delegato => (
-              <tr key={delegato.id}>
-                <td>{delegato.nome}</td>
-                <td>{delegato.cognome}</td>
-                <td>{delegato.email || '-'}</td>
-                <td>{delegato.telefono || '-'}</td>
-                <td>{new Date(delegato.dataRegistrazione).toLocaleDateString('it-IT')}</td>
-                <td>
-                  <button
-                    onClick={() => handleDeleteDelegato(delegato.id)}
-                    style={{ backgroundColor: '#d32f2f', padding: '5px 10px', fontSize: '12px' }}
-                  >
-                    Elimina
-                  </button>
-                </td>
+        <div style={{overflowX: 'auto'}}>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Nominativo</th>
+                <th>Nato a (il)</th>
+                <th>Documento</th>
+                <th>Data Registrazione</th>
+                <th>Azioni</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {delegati.map(delegato => (
+                <tr key={delegato.id}>
+                  <td><strong>{delegato.cognome} {delegato.nome}</strong></td>
+                  <td>{delegato.nato_a}<br/><span style={{fontSize: '0.85em', color: 'var(--text-muted)'}}>{new Date(delegato.data_nascita).toLocaleDateString('it-IT')}</span></td>
+                  <td>N. {delegato.doc_numero}<br/><span style={{fontSize: '0.85em', color: 'var(--text-muted)'}}>{delegato.doc_rilasciato_da}</span></td>
+                  <td>{new Date(delegato.created_at).toLocaleDateString('it-IT')}</td>
+                  <td>
+                    <button
+                      className="btn-danger"
+                      onClick={() => handleDeleteDelegato(delegato.id)}
+                    >
+                      Elimina
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

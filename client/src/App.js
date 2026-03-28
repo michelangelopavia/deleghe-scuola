@@ -65,33 +65,46 @@ function App() {
   }
 
   return (
-    <div className="app-container">
-      <h1>Generatore Autorizzazioni Prelievo</h1>
-      
-      <div className="tabs">
-        <button
-          className={`tab ${activeTab === 'genera' ? 'active' : ''}`}
-          onClick={() => setActiveTab('genera')}
-        >
-          Genera Autorizzazione
-        </button>
-        <button
-          className={`tab ${activeTab === 'registrati' ? 'active' : ''}`}
-          onClick={() => setActiveTab('registrati')}
-        >
-          Delegati Registrati
-        </button>
-      </div>
-
-      {activeTab === 'genera' && <GeneraPDF />}
-      {activeTab === 'registrati' && (
-        <div>
-          <h2>Elenco Delegati Registrati</h2>
-          <p>Visualizza l'elenco dei delegati registrati nel sistema.</p>
-          {/* Placeholder per lista delegati */}
+    <>
+      <header className="app-header">
+        <div className="brand">
+          <div className="brand-icon">📋</div>
+          <span>Istituto Valdese La Noce</span>
         </div>
-      )}
-    </div>
+        <div className="tabs">
+          <button
+            className={`tab ${activeTab === 'genera' ? 'active' : ''}`}
+            onClick={() => setActiveTab('genera')}
+          >
+            Genera
+          </button>
+          <button
+            className={`tab ${activeTab === 'registrati' ? 'active' : ''}`}
+            onClick={() => setActiveTab('registrati')}
+          >
+            Soggetti Delegati
+          </button>
+        </div>
+      </header>
+
+      <main className="app-container">
+        <div className="card">
+          <h1 className="card-title">Generatore Autorizzazioni</h1>
+          <hr className="card-divider" />
+          
+          {activeTab === 'genera' && <GeneraPDF />}
+          {activeTab === 'registrati' && (
+            <div>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+                Gestione dell'elenco dei delegati registrati nel sistema.
+              </p>
+              {/* Qui dovrebbe esserci un componente lista, ma per ora lo lasciamo come da originale o usiamo GestisciDelegati se appropriato */}
+              <GestisciDelegati />
+            </div>
+          )}
+        </div>
+      </main>
+    </>
   );
 }
 

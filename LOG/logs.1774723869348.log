@@ -1,0 +1,67 @@
+2026-03-28T18:50:23.339664813Z [inf]  
+2026-03-28T18:50:24.030570192Z [inf]  [35m==============
+2026-03-28T18:50:24.030610219Z [inf]  Using Nixpacks
+2026-03-28T18:50:24.030617371Z [inf]  ==============
+2026-03-28T18:50:24.030623215Z [inf]  [0m
+2026-03-28T18:50:24.133953059Z [inf]  ╔═════════════════ Nixpacks v1.38.0 ═════════════════╗
+2026-03-28T18:50:24.134021098Z [inf]  ║ install    │ npm install                           ║
+2026-03-28T18:50:24.134034758Z [inf]  ║            │ cd client && npm install              ║
+2026-03-28T18:50:24.134039031Z [inf]  ║────────────────────────────────────────────────────║
+2026-03-28T18:50:24.134043731Z [inf]  ║ build      │ cd client && npm run build            ║
+2026-03-28T18:50:24.134048582Z [inf]  ║────────────────────────────────────────────────────║
+2026-03-28T18:50:24.134052841Z [inf]  ║ start      │ node server/index.js                  ║
+2026-03-28T18:50:24.134056936Z [inf]  ╚════════════════════════════════════════════════════╝
+2026-03-28T18:50:24.331475179Z [inf]  [internal] load build definition from Dockerfile
+2026-03-28T18:50:24.331529750Z [inf]  [internal] load build definition from Dockerfile
+2026-03-28T18:50:24.331551801Z [inf]  [internal] load build definition from Dockerfile
+2026-03-28T18:50:24.605339917Z [inf]  [internal] load metadata for ghcr.io/railwayapp/nixpacks:ubuntu-1745885067
+2026-03-28T18:50:24.605659502Z [inf]  [internal] load .dockerignore
+2026-03-28T18:50:24.605682237Z [inf]  [internal] load .dockerignore
+2026-03-28T18:50:24.605731340Z [inf]  [internal] load .dockerignore
+2026-03-28T18:50:24.606011577Z [inf]  [internal] load .dockerignore
+2026-03-28T18:50:24.615496671Z [inf]  [internal] load .dockerignore
+2026-03-28T18:50:24.620741645Z [inf]  [stage-0  4/11] RUN nix-env -if .nixpacks/nixpkgs-ffeebf0acf3ae8b29f8c7049cd911b9636efd7e7.nix && nix-collect-garbage -d
+2026-03-28T18:50:24.620790852Z [inf]  [stage-0  3/11] COPY .nixpacks/nixpkgs-ffeebf0acf3ae8b29f8c7049cd911b9636efd7e7.nix .nixpacks/nixpkgs-ffeebf0acf3ae8b29f8c7049cd911b9636efd7e7.nix
+2026-03-28T18:50:24.620805226Z [inf]  [internal] load build context
+2026-03-28T18:50:24.620815855Z [inf]  [stage-0  2/11] WORKDIR /app/
+2026-03-28T18:50:24.620825257Z [inf]  [stage-0  1/11] FROM ghcr.io/railwayapp/nixpacks:ubuntu-1745885067@sha256:d45c89d80e13d7ad0fd555b5130f22a866d9dd10e861f589932303ef2314c7de
+2026-03-28T18:50:24.620892994Z [inf]  [stage-0 11/11] COPY . /app
+2026-03-28T18:50:24.620905975Z [inf]  [stage-0 10/11] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+2026-03-28T18:50:24.620916335Z [inf]  [stage-0  9/11] RUN --mount=type=cache,id=s/c4d1673f-0463-43a5-8a35-c8d4ce865cf4-node_modules/cache,target=/app/node_modules/.cache cd client && npm run build
+2026-03-28T18:50:24.620925515Z [inf]  [stage-0  8/11] COPY . /app/.
+2026-03-28T18:50:24.620937870Z [inf]  [stage-0  7/11] RUN --mount=type=cache,id=s/c4d1673f-0463-43a5-8a35-c8d4ce865cf4-/root/npm,target=/root/.npm cd client && npm install
+2026-03-28T18:50:24.620948748Z [inf]  [stage-0  6/11] RUN --mount=type=cache,id=s/c4d1673f-0463-43a5-8a35-c8d4ce865cf4-/root/npm,target=/root/.npm npm install
+2026-03-28T18:50:24.620956181Z [inf]  [stage-0  5/11] COPY . /app/.
+2026-03-28T18:50:24.620972320Z [inf]  [internal] load build context
+2026-03-28T18:50:24.620988254Z [inf]  [stage-0  1/11] FROM ghcr.io/railwayapp/nixpacks:ubuntu-1745885067@sha256:d45c89d80e13d7ad0fd555b5130f22a866d9dd10e861f589932303ef2314c7de
+2026-03-28T18:50:24.621202264Z [inf]  [internal] load build context
+2026-03-28T18:50:24.629090917Z [inf]  [stage-0  1/11] FROM ghcr.io/railwayapp/nixpacks:ubuntu-1745885067@sha256:d45c89d80e13d7ad0fd555b5130f22a866d9dd10e861f589932303ef2314c7de
+2026-03-28T18:50:24.648317017Z [inf]  [internal] load build context
+2026-03-28T18:50:24.652215093Z [inf]  [stage-0  2/11] WORKDIR /app/
+2026-03-28T18:50:24.652254292Z [inf]  [stage-0  3/11] COPY .nixpacks/nixpkgs-ffeebf0acf3ae8b29f8c7049cd911b9636efd7e7.nix .nixpacks/nixpkgs-ffeebf0acf3ae8b29f8c7049cd911b9636efd7e7.nix
+2026-03-28T18:50:24.652273836Z [inf]  [stage-0  4/11] RUN nix-env -if .nixpacks/nixpkgs-ffeebf0acf3ae8b29f8c7049cd911b9636efd7e7.nix && nix-collect-garbage -d
+2026-03-28T18:50:24.652309371Z [inf]  [stage-0  5/11] COPY . /app/.
+2026-03-28T18:50:24.652320184Z [inf]  [stage-0  6/11] RUN --mount=type=cache,id=s/c4d1673f-0463-43a5-8a35-c8d4ce865cf4-/root/npm,target=/root/.npm npm install
+2026-03-28T18:50:24.652333649Z [inf]  [stage-0  7/11] RUN --mount=type=cache,id=s/c4d1673f-0463-43a5-8a35-c8d4ce865cf4-/root/npm,target=/root/.npm cd client && npm install
+2026-03-28T18:50:24.652344776Z [inf]  [stage-0  8/11] COPY . /app/.
+2026-03-28T18:50:24.652364091Z [inf]  [stage-0  9/11] RUN --mount=type=cache,id=s/c4d1673f-0463-43a5-8a35-c8d4ce865cf4-node_modules/cache,target=/app/node_modules/.cache cd client && npm run build
+2026-03-28T18:50:24.899850302Z [inf]  npm warn config production Use `--omit=dev` instead.
+
+2026-03-28T18:50:24.916860646Z [inf]  
+> autorizzazioni-client@1.0.0 build
+> react-scripts build
+
+
+2026-03-28T18:50:26.584377373Z [inf]  Could not find a required file.
+
+2026-03-28T18:50:26.584979078Z [inf]    Name: index.js
+  Searched in: /app/client/src
+
+2026-03-28T18:50:26.691198107Z [err]  Dockerfile:25
+2026-03-28T18:50:26.691258618Z [err]  -------------------
+2026-03-28T18:50:26.691268047Z [err]  23 |     # build phase
+2026-03-28T18:50:26.691275048Z [err]  24 |     COPY . /app/.
+2026-03-28T18:50:26.691283829Z [err]  25 | >>> RUN --mount=type=cache,id=s/c4d1673f-0463-43a5-8a35-c8d4ce865cf4-node_modules/cache,target=/app/node_modules/.cache cd client && npm run build
+2026-03-28T18:50:26.691290066Z [err]  26 |
+2026-03-28T18:50:26.691301529Z [err]  -------------------
+2026-03-28T18:50:26.691307520Z [err]  ERROR: failed to build: failed to solve: process "/bin/bash -ol pipefail -c cd client && npm run build" did not complete successfully: exit code: 1
