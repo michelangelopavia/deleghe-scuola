@@ -39,7 +39,8 @@ function GeneraPDF() {
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          setFormData(prev => ({ ...prev, ...parsed }));
+          // Forziamo il delegato_id a vuoto per obbligare la scelta manuale ogni volta
+          setFormData(prev => ({ ...prev, ...parsed, delegato_id: '' }));
         } catch (err) {
           console.error('Errore nel caricamento dati salvati:', err);
         }
