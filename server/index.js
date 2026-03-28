@@ -154,9 +154,11 @@ app.delete('/api/delegati/:id', async (req, res) => {
 app.post('/api/genera-pdf', async (req, res) => {
   try {
     const {
-      // Genitore richiedente
+      // Genitori richiedenti
       genitore_nome,
       genitore_cognome,
+      genitore_nome_2,
+      genitore_cognome_2,
       // Alunno
       alunno_nome,
       alunno_cognome,
@@ -197,11 +199,21 @@ app.post('/api/genera-pdf', async (req, res) => {
   const L = 60;  // left margin
 
   // ── HEADER ──────────────────────────────────────────────────
-  // Logo text header (since we don't have the actual image)
-  doc.fontSize(10).font('Helvetica-Bold')
-     .text('CENTRO DIACONALE', { align: 'center' })
-     .text('ISTITUTO VALDESE - LA NOCE', { align: 'center' });
-  doc.moveDown(0.3);
+  // Logo Image
+  const logoPath = path.join(__dirname, '..', 'logo_generico_istituto-valdese_01-01.jpg');
+  try {
+    // 5cm in points (1cm = 28.35 points) -> 5 * 28.35 = 141.75
+    const logoWidth = 141.75; 
+    doc.image(logoPath, (doc.page.width - logoWidth) / 2, 40, { width: logoWidth });
+    doc.y = 40 + (logoWidth * 0.4) + 10; // offset basato su proporzione approssimativa
+  } catch (e) {
+    console.error("Logo non trovato o errore caricamento:", e);
+    doc.fontSize(10).font('Helvetica-Bold')
+       .text('CENTRO DIACONALE', { align: 'center' })
+       .text('ISTITUTO VALDESE - LA NOCE', { align: 'center' });
+  }
+
+  doc.moveDown(0.5);
   doc.moveTo(L, doc.y).lineTo(L + W, doc.y).stroke();
   doc.moveDown(0.5);
 
@@ -223,16 +235,19 @@ app.post('/api/genera-pdf', async (req, res) => {
   doc.moveDown(1);
 
   // ── CORPO ──────────────────────────────────────────────────
-
-  const genitoreNomeCompleto = `${genitore_nome} ${genitore_cognome}`;
+  const isPluraleManuale = genitore_nome_2 && genitore_nome_2.trim() !== '';
+  const genitoreNomeCompleto = isPluraleManuale 
+    ? `${genitore_nome} ${genitore_cognome} e ${genitore_nome_2} ${genitore_cognome_2}`
+    : `${genitore_nome} ${genitore_cognome}`;
+  
   const alunnoNomeCompleto = `${alunno_nome} ${alunno_cognome}`;
   const scuolaTipo = alunno_scuola === 'infanzia' ? '[X] infanzia  [ ] primaria' : '[ ] infanzia  [X] primaria';
 
-  // Riga 1: Il/la sottoscritto/a
+  // Riga 1: Il/la sottoscritto/a o I sottoscritti
   doc.fontSize(10).font('Helvetica')
-     .text(`Il/la sottoscritto/a `, { continued: true })
+     .text(isPluraleManuale ? `I sottoscritti ` : `Il/la sottoscritto/a `, { continued: true })
      .font('Helvetica-Bold').text(`${genitoreNomeCompleto}`, { continued: true })
-     .font('Helvetica').text(`  (padre e madre/tutore)`);
+     .font('Helvetica').text(isPluraleManuale ? ` (padre e madre/tutori)` : `  (padre e madre/tutore)`);
 
   doc.moveDown(0.6);
 

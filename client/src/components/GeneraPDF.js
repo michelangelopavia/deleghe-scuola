@@ -6,6 +6,8 @@ function GeneraPDF() {
   const [formData, setFormData] = useState({
     genitore_nome: '',
     genitore_cognome: '',
+    genitore_nome_2: '',
+    genitore_cognome_2: '',
     alunno_nome: '',
     alunno_cognome: '',
     alunno_nato_a: '',
@@ -123,6 +125,18 @@ function GeneraPDF() {
         <div className="form-group">
           <label>Cognome *</label>
           <input type="text" name="genitore_cognome" value={formData.genitore_cognome} onChange={handleChange} required />
+        </div>
+      </div>
+
+      <h2 style={{marginTop: '24px', fontSize: '1.2rem', color: 'var(--text-light)'}}>Secondo Genitore / Tutore (Opzionale)</h2>
+      <div className="form-group-inline">
+        <div className="form-group">
+          <label>Nome</label>
+          <input type="text" name="genitore_nome_2" value={formData.genitore_nome_2} onChange={handleChange} placeholder="Opzionale" />
+        </div>
+        <div className="form-group">
+          <label>Cognome</label>
+          <input type="text" name="genitore_cognome_2" value={formData.genitore_cognome_2} onChange={handleChange} placeholder="Opzionale" />
         </div>
       </div>
 
