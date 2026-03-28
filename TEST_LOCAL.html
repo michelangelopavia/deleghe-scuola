@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test API - Autorizzazioni Scuola</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #1a1a2e;
+      border-bottom: 3px solid #e94560;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #333;
+      margin-top: 30px;
+    }
+    button {
+      background: #e94560;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #d63450;
+    }
+    .result {
+      background: #f9f9f9;
+      border-left: 4px solid #e94560;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .success {
+      border-left-color: #28a745;
+      background: #f0f8f0;
+    }
+    .error {
+      border-left-color: #dc3545;
+      background: #f8f0f0;
+    }
+    .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    .status.ok {
+      background: #28a745;
+      color: white;
+    }
+    .status.error {
+      background: #dc3545;
+      color: white;
+    }
+    .info {
+      background: #e7f3ff;
+      border-left: 4px solid #2196F3;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Test Locale - Autorizzazioni Scuola</h1>
+    <p>Testa gli endpoint API e verifica il funzionamento dell'applicazione</p>
+    
+    <div class="info">
+      ✓ Frontend: <strong>http://localhost:3000</strong><br>
+      ✓ API Backend: <strong>http://localhost:3001</strong>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>1️⃣ Test GET /api/delegati</h2>
+    <button onclick="testGetDelegati()">Test GET /api/delegati</button>
+    <div id="result-get-delegati" class="result"></div>
+  </div>
+
+  <div class="container">
+    <h2>2️⃣ Test POST /api/delegati (Crea Delegato)</h2>
+    <button onclick="testPostDelegato()">Test POST /api/delegati</button>
+    <div id="result-post-delegato" class="result"></div>
+  </div>
+
+  <div class="container">
+    <h2>3️⃣ Test POST /api/genera-pdf (Genera PDF)</h2>
+    <button onclick="testGeneraPDF()">Test POST /api/genera-pdf</button>
+    <div id="result-genera-pdf" class="result"></div>
+  </div>
+
+  <div class="container">
+    <h2>📊 Risultati</h2>
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr style="background: #f0f0f0;">
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Test</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Status</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Messaggio</th>
+      </tr>
+      <tr id="test-row-1">
+        <td style="border: 1px solid #ddd; padding: 10px;">GET /api/delegati</td>
+        <td style="border: 1px solid #ddd; padding: 10px;">⏳ N/A</td>
+        <td style="border: 1px solid #ddd; padding: 10px;">-</td>
+      </tr>
+      <tr id="test-row-2">
+        <td style="border: 1px solid #ddd; padding: 10px;">POST /api/delegati</td>
+        <td style="border: 1px solid #ddd; padding: 10px;">⏳ N/A</td>
+        <td style="border: 1px solid #ddd; padding: 10px;">-</td>
+      </tr>
+      <tr id="test-row-3">
+        <td style="border: 1px solid #ddd; padding: 10px;">POST /api/genera-pdf</td>
+        <td style="border: 1px solid #ddd; padding: 10px;">⏳ N/A</td>
+        <td style="border: 1px solid #ddd; padding: 10px;">-</td>
+      </tr>
+    </table>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3001';
+    let createdDelegatoId = null;
+
+    function updateResultDiv(divId, content, isSuccess = true) {
+      const div = document.getElementById(divId);
+      div.innerHTML = `<pre>${JSON.stringify(content, null, 2)}</pre>`;
+      div.className = `result ${isSuccess ? 'success' : 'error'}`;
+    }
+
+    function updateTestRow(rowId, status, message) {
+      const row = document.getElementById(rowId);
+      const statusCell = row.cells[1];
+      const messageCell = row.cells[2];
+      statusCell.textContent = status;
+      messageCell.textContent = message;
+    }
+
+    async function testGetDelegati() {
+      try {
+        const response = await fetch(`${API_URL}/api/delegati`);
+        const data = await response.json();
+        updateResultDiv('result-get-delegati', data, true);
+        updateTestRow('test-row-1', '✅ PASS', `${data.length} delegati trovati`);
+      } catch (error) {
+        updateResultDiv('result-get-delegati', { error: error.message }, false);
+        updateTestRow('test-row-1', '❌ FAIL', error.message);
+      }
+    }
+
+    async function testPostDelegato() {
+      try {
+        const delegatoData = {
+          nome: "Paolo",
+          cognome: "Verdi",
+          nato_a: "Palermo",
+          data_nascita: "1985-05-20",
+          residente_a: "Palermo",
+          indirizzo: "Via Garibaldi",
+          numero_civico: "45",
+          doc_numero: "CD98765432",
+          doc_rilasciato_da: "Questura di Palermo",
+          doc_data: "2021-06-15"
+        };
+
+        const response = await fetch(`${API_URL}/api/delegati`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(delegatoData)
+        });
+
+        const data = await response.json();
+        createdDelegatoId = data.id;
+        updateResultDiv('result-post-delegato', data, response.ok);
+        updateTestRow('test-row-2', response.ok ? '✅ PASS' : '❌ FAIL', 
+          response.ok ? `Delegato creato: ${data.id}` : data.error);
+      } catch (error) {
+        updateResultDiv('result-post-delegato', { error: error.message }, false);
+        updateTestRow('test-row-2', '❌ FAIL', error.message);
+      }
+    }
+
+    async function testGeneraPDF() {
+      try {
+        // Prima ottieni un delegato existente
+        const delegatiResponse = await fetch(`${API_URL}/api/delegati`);
+        const delegati = await delegatiResponse.json();
+        
+        if (delegati.length === 0) {
+          updateResultDiv('result-genera-pdf', 
+            { error: "Nessun delegato disponibile. Crea un delegato prima." }, false);
+          updateTestRow('test-row-3', '❌ FAIL', 'Nessun delegato disponibile');
+          return;
+        }
+
+        const delegatoId = delegati[0].id;
+
+        const pdfData = {
+          genitore_nome: "Maria",
+          genitore_cognome: "Gialli",
+          alunno_nome: "Sofia",
+          alunno_cognome: "Gialli",
+          alunno_nato_a: "Palermo",
+          alunno_data_nascita: "2016-03-10",
+          alunno_classe: "2B",
+          alunno_scuola: "primaria",
+          delegato_id: delegatoId,
+          autorizza_recapiti: true,
+          data_modulo: new Date().toISOString().split('T')[0]
+        };
+
+        const response = await fetch(`${API_URL}/api/genera-pdf`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pdfData)
+        });
+
+        if (response.headers.get('content-type').includes('application/pdf')) {
+          updateResultDiv('result-genera-pdf', 
+            { message: "✅ PDF generato con successo!", size: response.headers.get('content-length') + ' bytes' }, true);
+          updateTestRow('test-row-3', '✅ PASS', 'PDF generato correttamente');
+        } else {
+          const data = await response.json();
+          updateResultDiv('result-genera-pdf', data, false);
+          updateTestRow('test-row-3', '❌ FAIL', data.error || 'Errore sconosciuto');
+        }
+      } catch (error) {
+        updateResultDiv('result-genera-pdf', { error: error.message }, false);
+        updateTestRow('test-row-3', '❌ FAIL', error.message);
+      }
+    }
+
+    // Auto-run tests on page load
+    window.addEventListener('load', () => {
+      console.log('Page loaded, ready to test');
+    });
+  </script>
+</body>
+</html>
