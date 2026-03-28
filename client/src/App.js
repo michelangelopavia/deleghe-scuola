@@ -39,7 +39,7 @@ function App() {
             Genera
           </a>
           <a href="/genitore-delegato" className={`tab ${isPublicRoute ? 'active' : ''}`} style={{display: 'flex', alignItems:'center', textDecoration: 'none', whiteSpace: 'nowrap'}}>
-            Nuova Delega
+            + Aggiungi
           </a>
           {adminAuthenticated && activeAdmin && (
             <button className="tab" onClick={handleLogout} style={{color: '#ffcdd2', borderBottom: 'none'}}>

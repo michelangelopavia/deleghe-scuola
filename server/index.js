@@ -89,6 +89,17 @@ app.post('/api/delegati', async (req, res) => {
       return res.status(400).json({ error: 'Campi obbligatori mancanti' });
     }
 
+    // Controllo duplicati (documento o nome/cognome)
+    const docEsistente = await db.prepare('SELECT id FROM delegati WHERE doc_numero = ?').get(doc_numero);
+    if (docEsistente) {
+      return res.status(400).json({ error: 'Un delegato con questo Numero di Documento è già presente a sistema.' });
+    }
+
+    const nomeEsistente = await db.prepare('SELECT id FROM delegati WHERE LOWER(nome) = ? AND LOWER(cognome) = ?').get(nome.toLowerCase().trim(), cognome.toLowerCase().trim());
+    if (nomeEsistente) {
+      return res.status(400).json({ error: 'Un delegato con questo identico Nome e Cognome è già stato registrato.' });
+    }
+
     const id = uuidv4();
     await db.prepare(`
       INSERT INTO delegati (id, nome, cognome, nato_a, data_nascita, residente_a, indirizzo, numero_civico, doc_numero, doc_rilasciato_da, doc_data)
