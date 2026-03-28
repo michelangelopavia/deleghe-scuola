@@ -176,7 +176,7 @@ function GeneraPDF() {
           <select name="delegato_id" value={formData.delegato_id} onChange={handleChange} required>
             <option value="">-- Seleziona un delegato --</option>
             {delegatiList.map(d => (
-              <option key={d.id} value={d.id}>{d.cognome} {d.nome} - {d.doc_numero}</option>
+              <option key={d.id} value={d.id}>{d.cognome} {d.nome}</option>
             ))}
           </select>
         ) : (
@@ -184,16 +184,8 @@ function GeneraPDF() {
         )}
       </div>
 
-      {selectedDelegatoObj && (
-        <div className="delegato-preview">
-          <h3 className="delegato-preview-title">{selectedDelegatoObj.nome} {selectedDelegatoObj.cognome}</h3>
-          <ul className="delegato-preview-list">
-            <li><strong>Nato a:</strong> {selectedDelegatoObj.nato_a} il {new Date(selectedDelegatoObj.data_nascita).toLocaleDateString('it-IT')}</li>
-            <li><strong>Residente:</strong> {selectedDelegatoObj.residente_a}, {selectedDelegatoObj.indirizzo} {selectedDelegatoObj.numero_civico}</li>
-            <li><strong>Documento:</strong> {selectedDelegatoObj.doc_numero} ({selectedDelegatoObj.doc_rilasciato_da})</li>
-          </ul>
-        </div>
-      )}
+      {/* Rimossa la preview dei dati sensibili per motivi di privacy richiesti */}
+
 
       <h2 style={{marginTop: '32px'}}>Opzioni Aggiuntive</h2>
       <div className="form-group">
