@@ -19,8 +19,8 @@ function GeneraPDF() {
     alunno_nato_a: '',
     alunno_data_nascita: '',
     alunno_classe: '',
-    alunno_scuola: 'primaria', // 'infanzia' o 'primaria'
-    delegato_id: '',
+    alunno_scuola: 'primaria',
+    delegato_ids: [], // Array di ID per multiselezione
     autorizza_recapiti: true,
     data_modulo: new Date().toISOString().split('T')[0]
   });
@@ -30,27 +30,22 @@ function GeneraPDF() {
   const [messageType, setMessageType] = useState('');
   const hasLoadedRef = useRef(false);
 
-  // Fetch delegati per la dropdown
   useEffect(() => {
     fetch('/api/delegati')
       .then(res => res.json())
-      .then(data => {
-        setDelegatiList(data);
-      })
+      .then(data => setDelegatiList(data))
       .catch(err => console.error("Errore caricamento delegati:", err));
   }, []);
 
-  // Ripristino dati salvati
   useEffect(() => {
     if (!hasLoadedRef.current) {
-      const saved = localStorage.getItem('autorizzazioniFormDataV2');
+      const saved = localStorage.getItem('autorizzazioniFormDataV3');
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          // Forziamo il delegato_id a vuoto per obbligare la scelta manuale ogni volta
-          setFormData(prev => ({ ...prev, ...parsed, delegato_id: '' }));
+          setFormData(prev => ({ ...prev, ...parsed, delegato_ids: [] }));
         } catch (err) {
-          console.error('Errore nel caricamento dati salvati:', err);
+          console.error('Errore caricamento salvati:', err);
         }
       }
       hasLoadedRef.current = true;
@@ -59,7 +54,7 @@ function GeneraPDF() {
 
   useEffect(() => {
     if (hasLoadedRef.current) {
-      localStorage.setItem('autorizzazioniFormDataV2', JSON.stringify(formData));
+      localStorage.setItem('autorizzazioniFormDataV3', JSON.stringify(formData));
     }
   }, [formData]);
 
@@ -71,25 +66,33 @@ function GeneraPDF() {
     }));
   };
 
+  const toggleDelegato = (id) => {
+    setFormData(prev => {
+      const ids = prev.delegato_ids.includes(id)
+        ? prev.delegato_ids.filter(i => i !== id)
+        : [...prev.delegato_ids, id];
+      return { ...prev, delegato_ids: ids };
+    });
+  };
+
   const handleGeneraPDF = async (e) => {
     e.preventDefault();
+    if (formData.delegato_ids.length === 0) {
+      alert("Seleziona almeno un delegato!");
+      return;
+    }
+    
     setLoading(true);
     setMessage('');
 
     try {
-      if (!formData.delegato_id) {
-        throw new Error('Devi selezionare un delegato!');
-      }
-
       const response = await fetch('/api/genera-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
 
-      if (!response.ok) {
-        throw new Error(`Errore Server: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Errore Server: ${response.status}`);
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -101,10 +104,9 @@ function GeneraPDF() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      setMessage('PDF autorizzazione generato con successo!');
+      setMessage('PDF generato correttamente!');
       setMessageType('success');
     } catch (error) {
-      console.error('Errore nella generazione PDF:', error);
       setMessage(`Errore: ${error.message}`);
       setMessageType('error');
     } finally {
@@ -112,15 +114,9 @@ function GeneraPDF() {
     }
   };
 
-  const selectedDelegatoObj = delegatiList.find(d => d.id === formData.delegato_id);
-
   return (
     <form onSubmit={handleGeneraPDF}>
-      {message && (
-        <div className={`alert ${messageType}`}>
-          {messageType === 'success' ? '✅ ' : '❌ '}{message}
-        </div>
-      )}
+      {message && <div className={`alert ${messageType}`}>{messageType === 'success' ? '✅ ' : '❌ '}{message}</div>}
 
       <h2>Dati Genitori o Tutori</h2>
       <div className="form-group-inline">
@@ -134,31 +130,25 @@ function GeneraPDF() {
         </div>
       </div>
 
-      {formData.genitore_nome_2 !== undefined && (
-        <>
-          {[2, 3, 4, 5].map(num => {
-            const nomeKey = num === 1 ? 'genitore_nome' : `genitore_nome_${num}`;
-            const cognomeKey = num === 1 ? 'genitore_cognome' : `genitore_cognome_${num}`;
-            
-            // Mostriamo il campo solo se il precedente è compilato o se stiamo già vedendo questo campo
-            const previousNome = num === 2 ? formData.genitore_nome : formData[`genitore_nome_${num-1}`];
-            if (!previousNome && !formData[nomeKey]) return null;
+      {[2, 3, 4, 5].map(num => {
+        const nomeKey = `genitore_nome_${num}`;
+        const cognomeKey = `genitore_cognome_${num}`;
+        const previousNome = num === 2 ? formData.genitore_nome : formData[`genitore_nome_${num-1}`];
+        if (!previousNome && !formData[nomeKey]) return null;
 
-            return (
-              <div key={num} className="form-group-inline" style={{marginTop: '12px', padding: '12px', backgroundColor: '#fcfaf8', borderRadius: '8px', border: '1px dashed var(--border-light)'}}>
-                <div className="form-group">
-                  <label>Nome (Genitore {num})</label>
-                  <input type="text" name={nomeKey} value={formData[nomeKey] || ''} onChange={handleChange} placeholder="Opzionale" />
-                </div>
-                <div className="form-group">
-                  <label>Cognome (Genitore {num})</label>
-                  <input type="text" name={cognomeKey} value={formData[cognomeKey] || ''} onChange={handleChange} placeholder="Opzionale" />
-                </div>
-              </div>
-            );
-          })}
-        </>
-      )}
+        return (
+          <div key={num} className="form-group-inline" style={{marginTop: '12px', padding: '12px', backgroundColor: '#fcfaf8', borderRadius: '8px', border: '1px dashed var(--border-light)'}}>
+            <div className="form-group">
+              <label>Nome (Genitore {num})</label>
+              <input type="text" name={nomeKey} value={formData[nomeKey]} onChange={handleChange} placeholder="Opzionale" />
+            </div>
+            <div className="form-group">
+              <label>Cognome (Genitore {num})</label>
+              <input type="text" name={cognomeKey} value={formData[cognomeKey]} onChange={handleChange} placeholder="Opzionale" />
+            </div>
+          </div>
+        );
+      })}
 
       <h2 style={{marginTop: '32px'}}>Dati Alunno/a</h2>
       <div className="form-group-inline">
@@ -192,34 +182,25 @@ function GeneraPDF() {
           <label>Tipo Scuola</label>
           <div className="radio-group" style={{marginTop: '8px'}}>
             <label className={`custom-radio ${formData.alunno_scuola === 'infanzia' ? 'checked' : ''}`}>
-              <input type="radio" name="alunno_scuola" value="infanzia" checked={formData.alunno_scuola === 'infanzia'} onChange={handleChange} />
-              Infanzia
+              <input type="radio" name="alunno_scuola" value="infanzia" checked={formData.alunno_scuola === 'infanzia'} onChange={handleChange} /> Infanzia
             </label>
             <label className={`custom-radio ${formData.alunno_scuola === 'primaria' ? 'checked' : ''}`}>
-              <input type="radio" name="alunno_scuola" value="primaria" checked={formData.alunno_scuola === 'primaria'} onChange={handleChange} />
-              Primaria
+              <input type="radio" name="alunno_scuola" value="primaria" checked={formData.alunno_scuola === 'primaria'} onChange={handleChange} /> Primaria
             </label>
           </div>
         </div>
       </div>
 
-      <h2 style={{marginTop: '32px'}}>Selezione Delegato</h2>
-      <div className="form-group">
-        <label>Persona autorizzata al prelievo *</label>
-        {delegatiList.length > 0 ? (
-          <select name="delegato_id" value={formData.delegato_id} onChange={handleChange} required>
-            <option value="">-- Seleziona un delegato --</option>
-            {delegatiList.map(d => (
-              <option key={d.id} value={d.id}>{d.cognome} {d.nome}</option>
-            ))}
-          </select>
-        ) : (
-          <p style={{color: 'var(--danger)', fontSize: '0.9rem'}}>Nessun delegato registrato. Vai nella tab "Soggetti Delegati" per aggiungerne uno.</p>
-        )}
+      <h2 style={{marginTop: '32px'}}>Selezione Delegati</h2>
+      <p style={{color: 'var(--text-light)', fontSize: '0.9rem', marginBottom: '12px'}}>Puoi selezionare più persone contemporaneamente:</p>
+      <div style={{display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto', padding: '4px'}}>
+        {delegatiList.length > 0 ? delegatiList.map(d => (
+          <label key={d.id} className={`custom-radio ${formData.delegato_ids.includes(d.id) ? 'checked' : ''}`} style={{display: 'flex', padding: '12px', cursor: 'pointer', justifyContent: 'flex-start'}}>
+            <input type="checkbox" checked={formData.delegato_ids.includes(d.id)} onChange={() => toggleDelegato(d.id)} style={{marginRight: '12px'}} />
+            {d.cognome} {d.nome}
+          </label>
+        )) : <p style={{color: 'var(--danger)'}}>Nessun delegato registrato.</p>}
       </div>
-
-      {/* Rimossa la preview dei dati sensibili per motivi di privacy richiesti */}
-
 
       <h2 style={{marginTop: '32px'}}>Opzioni Aggiuntive</h2>
       <div className="form-group">
@@ -230,13 +211,13 @@ function GeneraPDF() {
       </div>
 
       <div className="form-group" style={{maxWidth: '300px'}}>
-        <label>Data di compilazione del modulo</label>
+        <label>Data di compilazione</label>
         <input type="date" name="data_modulo" value={formData.data_modulo} onChange={handleChange} required />
       </div>
 
       <div className="button-group" style={{marginTop: '40px'}}>
-        <button type="submit" disabled={loading || !formData.delegato_id} className="btn-primary btn-lg">
-          {loading ? 'Generazione in corso...' : '📥 Scarica Autorizzazione (PDF)'}
+        <button type="submit" disabled={loading || formData.delegato_ids.length === 0} className="btn-primary btn-lg">
+          {loading ? 'Generazione...' : '📥 Scarica Autorizzazione (PDF)'}
         </button>
       </div>
     </form>

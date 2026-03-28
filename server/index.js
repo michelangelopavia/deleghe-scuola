@@ -163,14 +163,26 @@ app.post('/api/genera-pdf', async (req, res) => {
       // Alunno
       alunno_nome, alunno_cognome, alunno_nato_a, alunno_data_nascita, alunno_classe,
       alunno_scuola, // 'infanzia' o 'primaria'
-      // Delegato
-      delegato_id,
+      // Delegati (array di IDs)
+      delegato_ids,
       // Opzioni
       autorizza_recapiti, data_modulo
     } = req.body;
 
-    const delegato = await db.prepare('SELECT * FROM delegati WHERE id = ?').get(delegato_id);
-    if (!delegato) return res.status(404).json({ error: 'Delegato non trovato' });
+    if (!delegato_ids || !Array.isArray(delegato_ids) || delegato_ids.length === 0) {
+      return res.status(400).json({ error: 'Nessun delegato selezionato' });
+    }
+
+    // Recuperiamo tutti i delegati selezionati
+    const delegati = [];
+    for (const id of delegato_ids) {
+      if (id) {
+        const d = await db.prepare('SELECT * FROM delegati WHERE id = ?').get(id);
+        if (d) delegati.push(d);
+      }
+    }
+
+    if (delegati.length === 0) return res.status(404).json({ error: 'Delegati non trovati' });
 
     // Format dates
     const fmtDate = (d) => {
@@ -240,15 +252,14 @@ app.post('/api/genera-pdf', async (req, res) => {
      .text('Istituto Valdese', { align: 'right' })
      .text('Palermo', { align: 'right' });
 
-  doc.moveDown(1);
+  doc.moveDown(0.5);
 
   // Oggetto
   doc.fontSize(11).font('Helvetica-Bold')
      .text('Oggetto: ', { continued: true })
-     .font('Helvetica-Bold')
      .text('Autorizzazione integrativa al prelievo dei minori.');
 
-  doc.moveDown(1);
+  doc.moveDown(0.5);
 
   // ── CORPO ──────────────────────────────────────────────────
   const alunnoNomeCompleto = `${alunno_nome} ${alunno_cognome}`;
@@ -260,7 +271,7 @@ app.post('/api/genera-pdf', async (req, res) => {
      .font('Helvetica-Bold').text(`${genitoreNomeCompleto}`, { continued: true })
      .font('Helvetica').text(isPlurale ? ` (padre e madre/tutori)` : `  (padre e madre/tutore)`);
 
-  doc.moveDown(0.6);
+  doc.moveDown(0.4);
 
   // Riga 2: esercente la potestà
   doc.fontSize(10).font('Helvetica')
@@ -269,7 +280,7 @@ app.post('/api/genera-pdf', async (req, res) => {
      .font('Helvetica').text(`, nato/a a `, { continued: true })
      .font('Helvetica-Bold').text(`${alunno_nato_a}`);
 
-  doc.moveDown(0.6);
+  doc.moveDown(0.4);
 
   // Riga 3: il (data) frequentante
   doc.fontSize(10).font('Helvetica')
@@ -280,59 +291,59 @@ app.post('/api/genera-pdf', async (req, res) => {
      .font('Helvetica').text(`  della scuola paritaria  `, { continued: true })
      .font('Helvetica-Bold').text(`${scuolaTipo}`);
 
-  doc.moveDown(1);
+  doc.moveDown(0.8);
 
   // Testo autorizzazione (centrato + grassetto)
   doc.fontSize(10).font('Helvetica-Bold')
      .text('autorizza al prelievo, al termine delle lezioni', { align: 'center' })
      .text('o anticipatamente in caso di malessere del/della minore,', { align: 'center' })
-     .text('le seguenti persone:', { align: 'center' });
-
-  doc.moveDown(1);
-
-  // ── BOX DELEGATO ──────────────────────────────────────────
-  const boxTop = doc.y;
-  doc.rect(L, boxTop, W, 110).stroke();
-
-  const bL = L + 10;
-  doc.y = boxTop + 10;
-
-  // Nome e cognome / nato a / il
-  doc.x = bL;
-  doc.fontSize(10).font('Helvetica')
-     .text(`Nome e cognome  `, { continued: true, width: W - 20 })
-     .font('Helvetica-Bold').text(`${delegato.nome} ${delegato.cognome}`, { continued: true })
-     .font('Helvetica').text(`   nato a  `, { continued: true })
-     .font('Helvetica-Bold').text(`${delegato.nato_a}`, { continued: true })
-     .font('Helvetica').text(`   il  `, { continued: true })
-     .font('Helvetica-Bold').text(`${fmtDate(delegato.data_nascita)}`);
-
-  doc.moveDown(0.7);
-
-  // Residente
-  doc.x = bL;
-  doc.fontSize(10).font('Helvetica')
-     .text(`residente a  `, { continued: true, width: W - 20 })
-     .font('Helvetica-Bold').text(`${delegato.residente_a}`, { continued: true })
-     .font('Helvetica').text(`  in via/piazza  `, { continued: true })
-     .font('Helvetica-Bold').text(`${delegato.indirizzo}`, { continued: true })
-     .font('Helvetica').text(`  n  `, { continued: true })
-     .font('Helvetica-Bold').text(`${delegato.numero_civico}`);
-
-  doc.moveDown(0.7);
-
-  // Documento
-  doc.x = bL;
-  doc.fontSize(10).font('Helvetica')
-     .text(`documento di identità n  `, { continued: true, width: W - 20 })
-     .font('Helvetica-Bold').text(`${delegato.doc_numero}`, { continued: true })
-     .font('Helvetica').text(`,  rilasciato dal  `, { continued: true })
-     .font('Helvetica-Bold').text(`${delegato.doc_rilasciato_da}`, { continued: true })
-     .font('Helvetica').text(`  in data  `, { continued: true })
-     .font('Helvetica-Bold').text(`${fmtDate(delegato.doc_data)}`);
+     .text(delegati.length > 1 ? 'le seguenti persone:' : 'la seguente persona:', { align: 'center' });
 
   doc.moveDown(0.5);
 
+  // ── BOX DELEGATI ──────────────────────────────────────────
+  for (const delegato of delegati) {
+    const boxH = 75;
+    if (doc.y + boxH > 750) doc.addPage();
+    
+    const boxTop = doc.y;
+    doc.rect(L, boxTop, W, boxH).stroke();
+    const bL = L + 10;
+    doc.y = boxTop + 10;
+
+    doc.x = bL;
+    doc.fontSize(9).font('Helvetica')
+       .text(`Nome e cognome: `, { continued: true })
+       .font('Helvetica-Bold').text(`${delegato.nome} ${delegato.cognome}`, { continued: true })
+       .font('Helvetica').text(`   nato a: `, { continued: true })
+       .font('Helvetica-Bold').text(`${delegato.nato_a}`, { continued: true })
+       .font('Helvetica').text(`   il: `, { continued: true })
+       .font('Helvetica-Bold').text(`${fmtDate(delegato.data_nascita)}`);
+
+    doc.moveDown(0.4);
+    doc.x = bL;
+    doc.fontSize(9).font('Helvetica')
+       .text(`residente a: `, { continued: true })
+       .font('Helvetica-Bold').text(`${delegato.residente_a}`, { continued: true })
+       .font('Helvetica').text(`  in via/piazza: `, { continued: true })
+       .font('Helvetica-Bold').text(`${delegato.indirizzo}`, { continued: true })
+       .font('Helvetica').text(`  n: `, { continued: true })
+       .font('Helvetica-Bold').text(`${delegato.numero_civico}`);
+
+    doc.moveDown(0.4);
+    doc.x = bL;
+    doc.fontSize(9).font('Helvetica')
+       .text(`documento di identità n: `, { continued: true })
+       .font('Helvetica-Bold').text(`${delegato.doc_numero}`, { continued: true })
+       .font('Helvetica').text(`,  rilasciato dal: `, { continued: true })
+       .font('Helvetica-Bold').text(`${delegato.doc_rilasciato_da}`, { continued: true })
+       .font('Helvetica').text(`  in data: `, { continued: true })
+       .font('Helvetica-Bold').text(`${fmtDate(delegato.doc_data)}`);
+
+    doc.y = boxTop + boxH + 8;
+  }
+
+  doc.moveDown(0.5);
   doc.fontSize(8).font('Helvetica-Oblique')
      .text('(allegare fotostatica documento di identità fronte e retro, non occorre se già in possesso dell\'Istituto).', { align: 'center' });
 
