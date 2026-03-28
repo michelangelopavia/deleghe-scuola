@@ -28,9 +28,6 @@ function GeneraPDF() {
       .then(res => res.json())
       .then(data => {
         setDelegatiList(data);
-        if (data && data.length > 0 && !formData.delegato_id) {
-          setFormData(prev => ({ ...prev, delegato_id: data[0].id }));
-        }
       })
       .catch(err => console.error("Errore caricamento delegati:", err));
   }, []);
@@ -176,6 +173,7 @@ function GeneraPDF() {
         <label>Persona autorizzata al prelievo *</label>
         {delegatiList.length > 0 ? (
           <select name="delegato_id" value={formData.delegato_id} onChange={handleChange} required>
+            <option value="">-- Seleziona un delegato --</option>
             {delegatiList.map(d => (
               <option key={d.id} value={d.id}>{d.cognome} {d.nome} - {d.doc_numero}</option>
             ))}
