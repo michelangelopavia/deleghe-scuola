@@ -9,7 +9,10 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Database setup
-const dbPath = process.env.DB_PATH || path.join(__dirname, 'database.db');
+// Su Railway useremo un volume montato in /app/data per rendere il DB persistente
+const dbPath = process.env.NODE_ENV === 'production' 
+  ? '/app/data/database.db' 
+  : path.join(__dirname, 'database.db');
 const db = new Database(dbPath);
 
 // Initialize tables
