@@ -347,7 +347,6 @@ app.post('/api/genera-pdf', async (req, res) => {
   doc.fontSize(8).font('Helvetica-Oblique')
      .text('(allegare fotostatica documento di identità fronte e retro, non occorre se già in possesso dell\'Istituto).', { align: 'center' });
 
-  doc.y = boxTop + 120;
   doc.moveDown(1.5);
 
   // ── SEZIONE RECAPITI ──────────────────────────────────────
