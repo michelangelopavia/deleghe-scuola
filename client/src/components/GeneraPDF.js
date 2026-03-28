@@ -116,29 +116,43 @@ function GeneraPDF() {
         </div>
       )}
 
-      <h2>Dati Genitore o Tutore</h2>
+      <h2>Dati Genitori o Tutori</h2>
       <div className="form-group-inline">
         <div className="form-group">
-          <label>Nome *</label>
+          <label>Nome (Genitore 1) *</label>
           <input type="text" name="genitore_nome" value={formData.genitore_nome} onChange={handleChange} required />
         </div>
         <div className="form-group">
-          <label>Cognome *</label>
+          <label>Cognome (Genitore 1) *</label>
           <input type="text" name="genitore_cognome" value={formData.genitore_cognome} onChange={handleChange} required />
         </div>
       </div>
 
-      <h2 style={{marginTop: '24px', fontSize: '1.2rem', color: 'var(--text-light)'}}>Secondo Genitore / Tutore (Opzionale)</h2>
-      <div className="form-group-inline">
-        <div className="form-group">
-          <label>Nome</label>
-          <input type="text" name="genitore_nome_2" value={formData.genitore_nome_2} onChange={handleChange} placeholder="Opzionale" />
-        </div>
-        <div className="form-group">
-          <label>Cognome</label>
-          <input type="text" name="genitore_cognome_2" value={formData.genitore_cognome_2} onChange={handleChange} placeholder="Opzionale" />
-        </div>
-      </div>
+      {formData.genitore_nome_2 !== undefined && (
+        <>
+          {[2, 3, 4, 5].map(num => {
+            const nomeKey = num === 1 ? 'genitore_nome' : `genitore_nome_${num}`;
+            const cognomeKey = num === 1 ? 'genitore_cognome' : `genitore_cognome_${num}`;
+            
+            // Mostriamo il campo solo se il precedente è compilato o se stiamo già vedendo questo campo
+            const previousNome = num === 2 ? formData.genitore_nome : formData[`genitore_nome_${num-1}`];
+            if (!previousNome && !formData[nomeKey]) return null;
+
+            return (
+              <div key={num} className="form-group-inline" style={{marginTop: '12px', padding: '12px', backgroundColor: '#fcfaf8', borderRadius: '8px', border: '1px dashed var(--border-light)'}}>
+                <div className="form-group">
+                  <label>Nome (Genitore {num})</label>
+                  <input type="text" name={nomeKey} value={formData[nomeKey] || ''} onChange={handleChange} placeholder="Opzionale" />
+                </div>
+                <div className="form-group">
+                  <label>Cognome (Genitore {num})</label>
+                  <input type="text" name={cognomeKey} value={formData[cognomeKey] || ''} onChange={handleChange} placeholder="Opzionale" />
+                </div>
+              </div>
+            );
+          })}
+        </>
+      )}
 
       <h2 style={{marginTop: '32px'}}>Dati Alunno/a</h2>
       <div className="form-group-inline">

@@ -154,36 +154,52 @@ app.delete('/api/delegati/:id', async (req, res) => {
 app.post('/api/genera-pdf', async (req, res) => {
   try {
     const {
-      // Genitori richiedenti
-      genitore_nome,
-      genitore_cognome,
-      genitore_nome_2,
-      genitore_cognome_2,
+      // Genitori richiedenti (fino a 5)
+      genitore_nome, genitore_cognome,
+      genitore_nome_2, genitore_cognome_2,
+      genitore_nome_3, genitore_cognome_3,
+      genitore_nome_4, genitore_cognome_4,
+      genitore_nome_5, genitore_cognome_5,
       // Alunno
-      alunno_nome,
-      alunno_cognome,
-      alunno_nato_a,
-      alunno_data_nascita,
-      alunno_classe,
+      alunno_nome, alunno_cognome, alunno_nato_a, alunno_data_nascita, alunno_classe,
       alunno_scuola, // 'infanzia' o 'primaria'
-      // Delegato (id per recuperare dal db)
+      // Delegato
       delegato_id,
       // Opzioni
-      autorizza_recapiti,
-      data_modulo
+      autorizza_recapiti, data_modulo
     } = req.body;
 
     const delegato = await db.prepare('SELECT * FROM delegati WHERE id = ?').get(delegato_id);
     if (!delegato) return res.status(404).json({ error: 'Delegato non trovato' });
 
-  // Format dates
-  const fmtDate = (d) => {
-    if (!d) return '___________';
-    const dt = new Date(d);
-    return dt.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  };
+    // Format dates
+    const fmtDate = (d) => {
+      if (!d) return '___________';
+      const dt = new Date(d);
+      return dt.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    };
 
-  const dataOggi = data_modulo ? fmtDate(data_modulo) : fmtDate(new Date().toISOString());
+    const dataOggi = data_modulo ? fmtDate(data_modulo) : fmtDate(new Date().toISOString());
+
+    // ── LOGICA NOMI GENITORI ────────────────────────────────────
+    const listaGenitori = [
+      { n: genitore_nome, c: genitore_cognome },
+      { n: genitore_nome_2, c: genitore_cognome_2 },
+      { n: genitore_nome_3, c: genitore_cognome_3 },
+      { n: genitore_nome_4, c: genitore_cognome_4 },
+      { n: genitore_nome_5, c: genitore_cognome_5 }
+    ].filter(g => g.n && g.n.trim() !== '');
+
+    const isPlurale = listaGenitori.length > 1;
+    let genitoreNomeCompleto = "";
+    
+    if (listaGenitori.length === 1) {
+      genitoreNomeCompleto = `${listaGenitori[0].n} ${listaGenitori[0].c}`;
+    } else {
+      const allButLast = listaGenitori.slice(0, -1).map(g => `${g.n} ${g.c}`).join(", ");
+      const last = listaGenitori[listaGenitori.length - 1];
+      genitoreNomeCompleto = `${allButLast} e ${last.n} ${last.c}`;
+    }
 
   // Build PDF
   const doc = new PDFDocument({
@@ -235,19 +251,14 @@ app.post('/api/genera-pdf', async (req, res) => {
   doc.moveDown(1);
 
   // ── CORPO ──────────────────────────────────────────────────
-  const isPluraleManuale = genitore_nome_2 && genitore_nome_2.trim() !== '';
-  const genitoreNomeCompleto = isPluraleManuale 
-    ? `${genitore_nome} ${genitore_cognome} e ${genitore_nome_2} ${genitore_cognome_2}`
-    : `${genitore_nome} ${genitore_cognome}`;
-  
   const alunnoNomeCompleto = `${alunno_nome} ${alunno_cognome}`;
   const scuolaTipo = alunno_scuola === 'infanzia' ? '[X] infanzia  [ ] primaria' : '[ ] infanzia  [X] primaria';
 
   // Riga 1: Il/la sottoscritto/a o I sottoscritti
   doc.fontSize(10).font('Helvetica')
-     .text(isPluraleManuale ? `I sottoscritti ` : `Il/la sottoscritto/a `, { continued: true })
+     .text(isPlurale ? `I sottoscritti ` : `Il/la sottoscritto/a `, { continued: true })
      .font('Helvetica-Bold').text(`${genitoreNomeCompleto}`, { continued: true })
-     .font('Helvetica').text(isPluraleManuale ? ` (padre e madre/tutori)` : `  (padre e madre/tutore)`);
+     .font('Helvetica').text(isPlurale ? ` (padre e madre/tutori)` : `  (padre e madre/tutore)`);
 
   doc.moveDown(0.6);
 
