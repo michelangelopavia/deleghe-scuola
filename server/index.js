@@ -191,6 +191,13 @@ app.post('/api/genera-pdf', async (req, res) => {
       return dt.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
     };
 
+    const capitalize = (str) => {
+      if (!str) return '';
+      return str.split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+    };
+
     const dataOggi = data_modulo ? fmtDate(data_modulo) : fmtDate(new Date().toISOString());
 
     // ── LOGICA NOMI GENITORI ────────────────────────────────────
@@ -206,11 +213,11 @@ app.post('/api/genera-pdf', async (req, res) => {
     let genitoreNomeCompleto = "";
     
     if (listaGenitori.length === 1) {
-      genitoreNomeCompleto = `${listaGenitori[0].n} ${listaGenitori[0].c}`;
+      genitoreNomeCompleto = `${capitalize(listaGenitori[0].n)} ${capitalize(listaGenitori[0].c)}`;
     } else {
-      const allButLast = listaGenitori.slice(0, -1).map(g => `${g.n} ${g.c}`).join(", ");
+      const allButLast = listaGenitori.slice(0, -1).map(g => `${capitalize(g.n)} ${capitalize(g.c)}`).join(", ");
       const last = listaGenitori[listaGenitori.length - 1];
-      genitoreNomeCompleto = `${allButLast} e ${last.n} ${last.c}`;
+      genitoreNomeCompleto = `${allButLast} e ${capitalize(last.n)} ${capitalize(last.c)}`;
     }
 
   // Build PDF
@@ -219,23 +226,23 @@ app.post('/api/genera-pdf', async (req, res) => {
     margins: { top: 40, bottom: 40, left: 60, right: 60 }
   });
 
+  const displayAlunnoNome = capitalize(alunno_nome);
+  const displayAlunnoCognome = capitalize(alunno_cognome);
+
   res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `attachment; filename="autorizzazione_${alunno_cognome}_${alunno_nome}.pdf"`);
+  res.setHeader('Content-Disposition', `attachment; filename="autorizzazione_${displayAlunnoCognome}_${displayAlunnoNome}.pdf"`);
   doc.pipe(res);
 
   const W = 495; // usable width
   const L = 60;  // left margin
 
   // ── HEADER ──────────────────────────────────────────────────
-  // Logo Image
   const logoPath = path.join(__dirname, '..', 'logo_generico_istituto-valdese_01-01.jpg');
   try {
-    // 5cm in points (1cm = 28.35 points) -> 5 * 28.35 = 141.75
     const logoWidth = 141.75; 
     doc.image(logoPath, (doc.page.width - logoWidth) / 2, 40, { width: logoWidth });
-    doc.y = 40 + (logoWidth * 0.4) + 10; // offset basato su proporzione approssimativa
+    doc.y = 40 + (logoWidth * 0.4) + 10; 
   } catch (e) {
-    console.error("Logo non trovato o errore caricamento:", e);
     doc.fontSize(10).font('Helvetica-Bold')
        .text('CENTRO DIACONALE', { align: 'center' })
        .text('ISTITUTO VALDESE - LA NOCE', { align: 'center' });
@@ -262,7 +269,7 @@ app.post('/api/genera-pdf', async (req, res) => {
   doc.moveDown(0.5);
 
   // ── CORPO ──────────────────────────────────────────────────
-  const alunnoNomeCompleto = `${alunno_nome} ${alunno_cognome}`;
+  const alunnoNomeCompletoFormatted = `${displayAlunnoNome} ${displayAlunnoCognome}`;
   const scuolaTipo = alunno_scuola === 'infanzia' ? '[X] infanzia  [ ] primaria' : '[ ] infanzia  [X] primaria';
 
   // Riga 1: Il/la sottoscritto/a o I sottoscritti
@@ -276,9 +283,9 @@ app.post('/api/genera-pdf', async (req, res) => {
   // Riga 2: esercente la potestà
   doc.fontSize(10).font('Helvetica')
      .text(`esercente la potestà sull'alunno/a `, { continued: true })
-     .font('Helvetica-Bold').text(`${alunnoNomeCompleto}`, { continued: true })
+     .font('Helvetica-Bold').text(`${alunnoNomeCompletoFormatted}`, { continued: true })
      .font('Helvetica').text(`, nato/a a `, { continued: true })
-     .font('Helvetica-Bold').text(`${alunno_nato_a}`);
+     .font('Helvetica-Bold').text(`${capitalize(alunno_nato_a)}`);
 
   doc.moveDown(0.4);
 
@@ -314,9 +321,9 @@ app.post('/api/genera-pdf', async (req, res) => {
     doc.x = bL;
     doc.fontSize(9).font('Helvetica')
        .text(`Nome e cognome: `, { continued: true })
-       .font('Helvetica-Bold').text(`${delegato.nome} ${delegato.cognome}`, { continued: true })
+       .font('Helvetica-Bold').text(`${capitalize(delegato.nome)} ${capitalize(delegato.cognome)}`, { continued: true })
        .font('Helvetica').text(`   nato a: `, { continued: true })
-       .font('Helvetica-Bold').text(`${delegato.nato_a}`, { continued: true })
+       .font('Helvetica-Bold').text(`${capitalize(delegato.nato_a)}`, { continued: true })
        .font('Helvetica').text(`   il: `, { continued: true })
        .font('Helvetica-Bold').text(`${fmtDate(delegato.data_nascita)}`);
 
@@ -324,9 +331,9 @@ app.post('/api/genera-pdf', async (req, res) => {
     doc.x = bL;
     doc.fontSize(9).font('Helvetica')
        .text(`residente a: `, { continued: true })
-       .font('Helvetica-Bold').text(`${delegato.residente_a}`, { continued: true })
+       .font('Helvetica-Bold').text(`${capitalize(delegato.residente_a)}`, { continued: true })
        .font('Helvetica').text(`  in via/piazza: `, { continued: true })
-       .font('Helvetica-Bold').text(`${delegato.indirizzo}`, { continued: true })
+       .font('Helvetica-Bold').text(`${capitalize(delegato.indirizzo)}`, { continued: true })
        .font('Helvetica').text(`  n: `, { continued: true })
        .font('Helvetica-Bold').text(`${delegato.numero_civico}`);
 
@@ -336,7 +343,7 @@ app.post('/api/genera-pdf', async (req, res) => {
        .text(`documento di identità n: `, { continued: true })
        .font('Helvetica-Bold').text(`${delegato.doc_numero}`, { continued: true })
        .font('Helvetica').text(`,  rilasciato dal: `, { continued: true })
-       .font('Helvetica-Bold').text(`${delegato.doc_rilasciato_da}`, { continued: true })
+       .font('Helvetica-Bold').text(`${capitalize(delegato.doc_rilasciato_da)}`, { continued: true })
        .font('Helvetica').text(`  in data: `, { continued: true })
        .font('Helvetica-Bold').text(`${fmtDate(delegato.doc_data)}`);
 
